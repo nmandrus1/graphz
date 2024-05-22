@@ -78,13 +78,3 @@ Graphz is designed to provide efficient, scalable, and flexible tools for graph 
 To get started with the High-Performance Graph Library, follow the installation instructions and refer to the documentation for usage details and API references.
 
 ### Installation
-
-```sh
-# Clone the repository
-git clone https://github.com/yourusername/high-performance-graph-library.git
-
-# Navigate to the project directory
-cd high-performance-graph-library
-
-# Build the project
-make build
