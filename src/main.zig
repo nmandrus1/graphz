@@ -1,58 +1,22 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 
-const testing = std.testing;
+const Graph = @import("graphz.zig").AdjacencyMatrix;
 
-const Edge = struct { u8, u8 };
+pub fn main() !void {
+    std.debug.print("Hello Graph Lib!\n", .{});
 
-// basic 1D adjacency matrix representation
-const Graph = struct {
-    vcount: usize,
-    data: []u8,
-    allocator: Allocator,
+    var alloc = std.heap.GeneralPurposeAllocator(.{}){};
 
-    // alloc and free
-    pub fn init(allocator: Allocator, vertex_count: usize) Allocator.Error!Graph {
-        return Graph{
-            .vcount = vertex_count,
-            .allocator = allocator,
-            .data = try allocator.alloc(u8, vertex_count * vertex_count),
-        };
-    }
-
-    pub fn deinit(self: Graph) void {
-        self.allocator.free(self.data);
-    }
-
-    // Allocate and Populate a graph based on the edge list
-    pub fn fromEdgeList(allocator: Allocator, edges: []const struct { u8, u8 }) Allocator.Error!Graph {
-        var graph = try Graph.init(allocator, edges.len);
-
-        for (edges) |e| {
-            const e1 = e.@"0";
-            const e2 = e.@"1";
-            graph.data[e1] = e2;
-            graph.data[e2] = e1;
-        }
-
-        return graph;
-    }
-};
-
-test "init and deinit" {
-    var graph = try Graph.init(testing.allocator, 5);
-    defer graph.deinit();
-
-    try testing.expect(graph.data.len == graph.vcount * graph.vcount);
-}
-
-test "from edge list" {
     const edges = [_]struct { u8, u8 }{ .{ 0, 1 }, .{ 0, 2 }, .{ 1, 2 }, .{ 1, 3 }, .{ 2, 4 } };
+    const vcount = edges.len;
 
-    // runtime length to coerce array into slice
-    var start: u8 = 0;
-    _ = &start;
+    var g = try Graph.fromEdgeListAlloc(alloc.allocator(), &edges);
+    defer g.deinit();
 
-    var graph = try Graph.fromEdgeList(testing.allocator, edges[start..]);
-    defer graph.deinit();
+    // parents array of vcount i16s
+    var parents: [vcount]i16 = [_]i16{-1} ** vcount;
+
+    // calculate BFS and write to parents array
+    try g.bfs(&parents);
+    std.debug.print("{any}\n", .{&parents});
 }
